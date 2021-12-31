@@ -5,7 +5,7 @@
 ![Pull Requests](https://img.shields.io/github/issues-pr/Ekstropiya/Spotify-Shield?label=pull%20requests)
 ![Version](https://img.shields.io/github/v/tag/Ekstropiya/Spotify-Shield)
 
-Utilize Spotify's API to create a Shield.IO image for your GitHub README.
+Utilize Spotify's API to create a Shields.IO image for your GitHub README.
 
 ### Documentation
 
