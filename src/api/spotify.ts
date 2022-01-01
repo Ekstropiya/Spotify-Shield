@@ -43,7 +43,7 @@ export const spotify = (spotify: Spotify): Router => {
         res.end();
     });
 
-    api.get("/playing-raw.svg", async (_, res: Response) => {
+    api.get("/playing-raw", async (_, res: Response) => {
         const url = await getUrl(spotify);
 
         const img = Buffer.from((await axios.get(url, {
@@ -51,7 +51,6 @@ export const spotify = (spotify: Spotify): Router => {
         })).data, 'binary');
 
         res.setHeader('Content-Type', 'image/svg+xml; charset-utf8');
-        res.setHeader('Content-Encoding', 'br');
         res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
         res.end(img); 
     });
