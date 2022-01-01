@@ -2,6 +2,7 @@ import axios, { Axios } from 'axios';
 import { Request, Response } from 'express';
 import qs from 'qs';
 import querystring from 'querystring';
+import * as fs from 'fs';
 
 // TODO: Improve interfaces.
 export interface CurrentlyPlaying {
@@ -26,7 +27,9 @@ export class Spotify {
     constructor(
         private readonly clientId: string,
         private readonly clientSecret: string,
-        private readonly redirectUri: string
+        private readonly redirectUri: string,
+        private readonly cacheFile: string,
+        private readonly cache: boolean
     ) {
         this.appAuthorization = Buffer.from(this.clientId + ':' + this.clientSecret, 'ascii').toString('base64');
         this.axios = new Axios({
@@ -34,27 +37,81 @@ export class Spotify {
                 "Authorization": `Basic ${this.appAuthorization}`
             }
         })
+
+        if (this.cache) {
+            this.readCachedAuth();
+        }
     }
 
-    private readonly refreshAuth = () => {
-        this.axios.post("https://accounts.spotify.com/api/token", qs.stringify({
-            grant_type: 'refresh_token',
-            refresh_token: this.authRefresh,
-        }), {
-            headers: {
-                "content-type": "application/x-www-form-urlencoded"
+    private readonly readCachedAuth = () => {
+        if (fs.existsSync(this.cacheFile)) {
+            const cache = fs.readFileSync(this.cacheFile).toString('utf-8');
+
+            if (cache != "") {
+                this.updateAuth(undefined, cache)
+                this.refreshAuth(true);
             }
-        }).catch((error) => {
-            console.error(error);
-            process.exit(200);
-        }).then((response) => {
-            if (response) {
-                this.auth = response.data.access_token;
+        } else {
+            fs.writeFileSync(this.cacheFile, "");
+        }
+    }
+
+    private readonly updateAuth = (newAuth?: string, newRefresh?: string, cacheOverride?: boolean) => {
+        if (!newAuth && !newRefresh) {
+            return;
+        }
+
+        if (newAuth) {
+            this.auth = newAuth;
+            this.authorized = true;
+        }
+
+        if (newRefresh) {
+            this.authRefresh = newRefresh;
+        }
+
+        if ((cacheOverride == undefined && this.cache) || (this.cache && cacheOverride)) {
+            if (fs.existsSync(this.cacheFile)) {
+                fs.writeFileSync(this.cacheFile, `${this.authRefresh}`);
+            } else {
+                this.readCachedAuth();
             }
-        });
+        }
+    }
+
+    private readonly refreshAuth = (now?: boolean) => {
+        const method = () => {
+            this.axios.post("https://accounts.spotify.com/api/token", qs.stringify({
+                grant_type: 'refresh_token',
+                refresh_token: this.authRefresh,
+            }), {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }).catch((error) => {
+                console.error(error);
+                process.exit(200);
+            }).then((response) => {
+                if (response) {
+                    const data = JSON.parse(response.data);
+                    this.updateAuth(data["access_token"]);
+                }
+            });
+        }
+
+        if (now) {
+            method();
+        }
+
+        setInterval(method, 1000 * 60 * 5)
     }
 
     public readonly authorization = (_: Request, res: Response) => {
+        if (this.authorized) {
+            res.sendStatus(403);
+            return;
+        }
+
         const scope = 'user-read-currently-playing user-read-playback-state';
         res.redirect('https://accounts.spotify.com/authorize?' + querystring.stringify({
             response_type: 'code',
@@ -65,7 +122,7 @@ export class Spotify {
     }
 
     public readonly callback = (req: Request, res: Response) => {
-        if (this.auth) {
+        if (this.authorized) {
             res.sendStatus(403);
             return;
         }
@@ -85,15 +142,11 @@ export class Spotify {
             res.status(400);
             res.end();
         }).then((response) => {
-
             if (response) {
                 const data = JSON.parse(response.data);
 
-                this.authorized = true;
-                this.auth = data["access_token"];
-                this.authRefresh = data["refresh_token"];
-    
-                setInterval(this.refreshAuth, 1000 * 60 * 5)
+                this.updateAuth(data["access_token"], data["refresh_token"]);
+                this.refreshAuth();
     
                 res.status(200);
                 res.end();
