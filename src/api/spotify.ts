@@ -38,6 +38,7 @@ export const spotify = (spotify: Spotify): Router => {
 
     api.get("/playing", async (_, res: Response) => {
         res.setHeader("Location", await getUrl(spotify));
+        res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate')
         res.status(302);
         res.end();
     });
@@ -49,8 +50,9 @@ export const spotify = (spotify: Spotify): Router => {
             responseType: 'arraybuffer'
         })).data, 'binary');
 
-        res.setHeader('Content-Type', 'image/svg+xml;charset-utf8');
+        res.setHeader('Content-Type', 'image/svg+xml; charset-utf8');
         res.setHeader('Content-Encoding', 'br');
+        res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
         res.end(img); 
     });
 
