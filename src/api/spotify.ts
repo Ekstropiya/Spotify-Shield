@@ -12,11 +12,14 @@ const getUrl = async (spotify: Spotify): Promise<string> => {
 
         if (playing) {
             let artist = playing.artist.replaceAll("-", "--");
-            let song = playing.song.replaceAll("-", "--");
+            let song = playing.song;
 
-            if (song.length > 25) {
+            if (song.length > 22) {
                 song = song.substring(0, 22) + "...";
             }
+
+            song = song.replaceAll("-", "--"); // Duran Duran -- Hungry Like the Wolf -- 2009 Remaster
+                                               // Of course, the second dash is the 22nd character.
 
             url = `https://img.shields.io/badge/${artist} -- ${song}-Spotify-117032?labelColor=1DB954`
 
