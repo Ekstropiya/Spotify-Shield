@@ -23,7 +23,7 @@ export const spotify = (spotify: Spotify): Router => {
 
                 url = `https://img.shields.io/badge/${artist} -- ${song}-Spotify-117032?labelColor=1DB954`
 
-                console.log(process.env["ALBUM_COVER"])
+
                 if (process.env["ALBUM_COVER"] == "true") {
                     const imageb64 = Buffer.from((await axios.get(playing.image, {
                         responseType: 'arraybuffer'
