@@ -1,0 +1,7 @@
+/node_modules
+/docker
+/.env
+/.gitignore
+/cache
+/README.md
+/yarn-error.log

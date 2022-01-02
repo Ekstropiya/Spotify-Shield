@@ -1,0 +1,15 @@
+version: '3.6'
+
+services:
+  server:
+    container_name: spotify-shield
+    image: spotify-shield:latest
+    build:
+      context: ..
+      dockerfile: docker/spotify-shield.dockerfile
+    restart: on-failure:1
+    ports:
+      - '8080:8080'
+    volumes:
+      - '${SPOTIFY_SHIELD_HOME:-/srv/spotify-shield}/config:/etc/spotifyshield'
+      - '${SPOTIFY_SHIELD_HOME:-/srv/spotify-shield}/data:/opt/spotifyshield/data'
