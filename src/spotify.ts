@@ -37,7 +37,7 @@ export class Spotify {
         this.appAuthorization = Buffer.from(this.clientId + ':' + this.clientSecret, 'ascii').toString('base64');
         this.axios = new Axios({
             headers: {
-                "Authorization": `Basic ${this.appAuthorization}`
+                'Authorization': `Basic ${this.appAuthorization}`
             }
         })
 
@@ -48,7 +48,7 @@ export class Spotify {
         if (onError) {
             this.onError = onError;
         } else {
-            this.onError = () => {};
+            this.onError = () => { };
         }
     }
 
@@ -56,12 +56,12 @@ export class Spotify {
         if (fs.existsSync(this.cacheFile)) {
             const cache = fs.readFileSync(this.cacheFile).toString('utf-8');
 
-            if (cache != "") {
+            if (cache != '') {
                 this.updateAuth(undefined, cache)
                 this.refreshAuth(true);
             }
         } else {
-            fs.writeFileSync(this.cacheFile, "");
+            fs.writeFileSync(this.cacheFile, '');
         }
     }
 
@@ -90,12 +90,12 @@ export class Spotify {
 
     private readonly refreshAuth = (now?: boolean) => {
         const method = () => {
-            this.axios.post("https://accounts.spotify.com/api/token", qs.stringify({
+            this.axios.post('https://accounts.spotify.com/api/token', qs.stringify({
                 grant_type: 'refresh_token',
                 refresh_token: this.authRefresh,
             }), {
                 headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 }
             }).catch((error) => {
                 this.onError(new Error(`spotify: Failed to refresh authorization. Error:\n${error}`));
@@ -103,7 +103,7 @@ export class Spotify {
             }).then((response) => {
                 if (response) {
                     const data = JSON.parse(response.data);
-                    this.updateAuth(data["access_token"]);
+                    this.updateAuth(data['access_token']);
                 }
             });
         }
@@ -154,9 +154,9 @@ export class Spotify {
             if (response) {
                 const data = JSON.parse(response.data);
 
-                this.updateAuth(data["access_token"], data["refresh_token"]);
+                this.updateAuth(data['access_token'], data['refresh_token']);
                 this.refreshAuth();
-    
+
                 res.status(200);
                 res.end();
             }
@@ -182,7 +182,7 @@ export class Spotify {
             } else if (response.status == 204) {
                 return undefined;
             }
-    
+
             return {
                 song: data['item']['name'],
                 artist: data['item']['artists'][0]['name'],
@@ -190,7 +190,7 @@ export class Spotify {
                 previewLink: data['item']['preview_url'],
                 songLink: data['item']['external_urls']['spotify'],
             };
-        } else { 
+        } else {
             return undefined;
         }
 

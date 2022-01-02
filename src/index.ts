@@ -11,21 +11,21 @@ const onError = (error: any) => {
 }
 
 const client = new Spotify(
-    process.env["CLIENT_ID"]!,
-    process.env["CLIENT_SECRET"]!,
-    process.env["REDIRECT_URI"]!,
-    process.env["CACHE_FILE"]!,
-    process.env["CACHE"]! == "true",
+    process.env['CLIENT_ID']!,
+    process.env['CLIENT_SECRET']!,
+    process.env['REDIRECT_URI']!,
+    process.env['CACHE_FILE']!,
+    process.env['CACHE']! == 'true',
     onError
 );
 
 const app = express();
 
-app.use("/", api(client));
+app.use('/', api(client));
 app.use(cors());
 
-const addr = process.env["BIND_ADDR"] || "0.0.0.0";
-const port = parseInt(process.env["BIND_PORT"] || "6768");
+const addr = process.env['BIND_ADDR'] || '0.0.0.0';
+const port = parseInt(process.env['BIND_PORT'] || '6768');
 
 app.listen(port, addr, () => {
     console.log(`[+] Server up on ${addr}:${port}.`)

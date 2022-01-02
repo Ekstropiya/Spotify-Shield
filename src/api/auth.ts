@@ -1,5 +1,5 @@
-import { Router } from "express"
-import { Spotify } from "../spotify";
+import { Router } from 'express'
+import { Spotify } from '../spotify';
 
 export const auth = (spotify: Spotify) => {
     const api: Router = Router();

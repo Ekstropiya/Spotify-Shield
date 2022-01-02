@@ -5,7 +5,7 @@ import { spotify } from './spotify'
 
 export const api = (client: Spotify): Router => {
     const api: Router = Router();
-    
+
     api.use('/auth', auth(client));
     api.use('/spotify', spotify(client));
 
