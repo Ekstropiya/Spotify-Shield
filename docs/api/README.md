@@ -45,7 +45,7 @@ Vary: Accept
 Content-Type: text/plain; charset=utf-8
 ```
 
-##### POST ``/auth/callback``
+##### AUTH ``/auth/callback``
 
 **NOTE:** *``/auth`` endpoints are reserved for authorizing the Spotify client application and are not meant to be used more than once.*
 
