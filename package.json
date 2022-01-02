@@ -9,8 +9,8 @@
   "scripts": {
     "build": "tsc",
     "start": "npm run build; node dist",
-    "build:dev": "tsc -w",
-    "start:dev": "npm run build:dev & nodemon node dist"
+    "dev:build": "tsc -w",
+    "dev:start": "npm run build:dev & nodemon node dist"
   },
   "dependencies": {
     "axios": "^0.24.0",
