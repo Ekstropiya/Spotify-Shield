@@ -1,7 +1,6 @@
 import axios, { Axios } from 'axios';
 import { Request, Response } from 'express';
 import qs from 'qs';
-import querystring from 'querystring';
 import * as fs from 'fs';
 
 // TODO: Improve interfaces.
@@ -122,12 +121,13 @@ export class Spotify {
         }
 
         const scope = 'user-read-currently-playing user-read-playback-state';
-        res.redirect('https://accounts.spotify.com/authorize?' + querystring.stringify({
+        const queries = new URLSearchParams({
             response_type: 'code',
             client_id: this.clientId,
             scope: scope,
             redirect_uri: this.redirectUri,
-        }));
+        });
+        res.redirect(`https://accounts.spotify.com/authorize?${queries.toString()}`);
     }
 
     public readonly callback = (req: Request, res: Response) => {
