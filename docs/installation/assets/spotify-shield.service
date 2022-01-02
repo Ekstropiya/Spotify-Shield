@@ -1,0 +1,10 @@
+[Unit]
+Description=Spotify Shield API.
+
+[Service]
+WorkingDirectory=/opt/spotify-shield
+ExecStart=/usr/bin/yarn run start
+Restart=unless-stopped
+
+[Install]
+WantedBy=multi-user.target
