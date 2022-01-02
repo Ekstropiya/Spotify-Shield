@@ -24,12 +24,15 @@ export class Spotify {
 
     public authorized: boolean = false;
 
+    private readonly onError: (error: any) => void;
+
     constructor(
         private readonly clientId: string,
         private readonly clientSecret: string,
         private readonly redirectUri: string,
         private readonly cacheFile: string,
-        private readonly cache: boolean
+        private readonly cache: boolean,
+        onError?: (error: any) => void
     ) {
         this.appAuthorization = Buffer.from(this.clientId + ':' + this.clientSecret, 'ascii').toString('base64');
         this.axios = new Axios({
@@ -40,6 +43,12 @@ export class Spotify {
 
         if (this.cache) {
             this.readCachedAuth();
+        }
+
+        if (onError) {
+            this.onError = onError;
+        } else {
+            this.onError = () => {};
         }
     }
 
@@ -89,7 +98,7 @@ export class Spotify {
                     "Content-Type": "application/x-www-form-urlencoded"
                 }
             }).catch((error) => {
-                console.error(error);
+                this.onError(new Error(`spotify: Failed to refresh authorization. Error:\n${error}`));
                 process.exit(200);
             }).then((response) => {
                 if (response) {
@@ -138,7 +147,7 @@ export class Spotify {
                 'content-type': 'application/x-www-form-urlencoded'
             },
         }).catch((error) => {
-            console.error(error);
+            this.onError(error);
             res.status(400);
             res.end();
         }).then((response) => {
@@ -161,15 +170,16 @@ export class Spotify {
                 'Content-Type': 'application/json'
             }
         }).catch((error) => {
-            console.error(error);
+            this.onError(error);
             return undefined;
-            // TODO: Do something more fancy.
         });
 
         if (response) {
             const data = response.data;
 
             if (data['is_playing'] == false) {
+                return undefined;
+            } else if (response.status == 204) {
                 return undefined;
             }
     

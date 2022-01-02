@@ -13,7 +13,11 @@ const cacheFile: string = process.env["CACHE_FILE"]!;
 const cache: boolean = process.env["CACHE"]! == "true";
 
 const api: Router = Router();
-const client: Spotify = new Spotify(clientId, clientSecret, redirectUri, cacheFile, cache);
+
+const onError = (error: any) => {
+    console.error(`An error ocurred in the Spotify client: ${error}`);
+}
+const client: Spotify = new Spotify(clientId, clientSecret, redirectUri, cacheFile, cache, onError);
 
 api.use('/auth', auth(client));
 api.use('/spotify', spotify(client));

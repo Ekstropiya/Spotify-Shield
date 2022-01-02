@@ -8,7 +8,6 @@ loadConfig();
 const app = express();
 
 app.use("/", api);
-
 app.use(cors());
 
 const addr = process.env["BIND_ADDR"] || "0.0.0.0";
