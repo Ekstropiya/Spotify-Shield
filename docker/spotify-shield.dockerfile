@@ -11,7 +11,7 @@ RUN yarn install
 
 ADD . /opt/spotifyshield/
 
-VOLUME [ "/etc/spotifyshield" ]
+VOLUME [ "/etc/spotifyshield", "/opt/spotifyshield/data" ]
 
 CMD [ "yarn", "run", "start" ]
 EXPOSE 8080
