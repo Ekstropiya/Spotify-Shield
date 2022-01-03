@@ -2,7 +2,7 @@ import axios, { Axios } from 'axios';
 import { Request, Response } from 'express';
 import qs from 'qs';
 import * as fs from 'fs';
-import { Artist, Track } from './entities';
+import { Artist, Episode, Show, Track } from './entities';
 
 export class Spotify {
 
@@ -236,6 +236,42 @@ export class Spotify {
                 preview: data['preview_url'],
                 link: data['external_urls']['spotify'],
             };
+        }
+
+        return undefined;
+    }
+
+    public getShow = async (id: string): Promise<Show | undefined> => {
+        const response = await axios.get(`https://api.spotify.com/v1/shows/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${this.auth}`,
+                'Content-Type': 'application/json'
+            }
+        }).catch((_) => {
+            return undefined;
+        });
+
+        if (response) {
+            const data = response.data;
+
+            const show: Show = {
+                name: data['name'],
+                images: data['images'],
+                description: data['description'],
+                episodes: new Array<Episode>(),
+            };
+
+            data['episodes']['items']?.forEach((episode: any) => {
+                show.episodes.push({
+                    name: episode['name'],
+                    images: episode['images'],
+                    url: episode['external_urls']['spotify'],
+                    date: episode['release_date'],
+                    duration: episode['duration_ms'],
+                });
+            });
+
+            return show;
         }
 
         return undefined;
