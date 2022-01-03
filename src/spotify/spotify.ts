@@ -240,9 +240,7 @@ export class Spotify {
 
         return undefined;
     }
-/*
 
- */
     public getShow = async (id: string): Promise<Show | undefined> => {
         const response = await axios.get(`https://api.spotify.com/v1/shows/${id}`, {
             headers: {
