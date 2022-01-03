@@ -240,7 +240,9 @@ export class Spotify {
 
         return undefined;
     }
+/*
 
+ */
     public getShow = async (id: string): Promise<Show | undefined> => {
         const response = await axios.get(`https://api.spotify.com/v1/shows/${id}`, {
             headers: {
@@ -272,6 +274,29 @@ export class Spotify {
             });
 
             return show;
+        }
+
+        return undefined;
+    }
+
+    public getArtist = async (id: string): Promise<Artist | undefined> => {
+        const response = await axios.get(`https://api.spotify.com/v1/artists/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${this.auth}`,
+                'Content-Type': 'application/json'
+            }
+        }).catch((_) => {
+            return undefined;
+        });
+
+        if (response) {
+            const data = response.data;
+
+            return {
+                name: data['name'],
+                icons: data['images'],
+                followers: data['followers']['total']
+            };
         }
 
         return undefined;
