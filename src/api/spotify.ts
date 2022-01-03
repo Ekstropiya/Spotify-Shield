@@ -2,6 +2,7 @@ import { Router, Response, Request } from 'express';
 import { config as loadConfig } from 'dotenv';
 import axios from 'axios';
 import { Spotify, Track } from 'src/spotify';
+import { Config } from '../config';
 
 loadConfig();
 
@@ -28,14 +29,14 @@ const getPlayingUrl = async (spotify: Spotify): Promise<string> => {
         const playing: Track | undefined = await spotify.getCurrentlyPlaying();
 
         if (playing) {
-            url = await getTrackUrl(playing, (process.env["ALBUM_COVER"] || 'true') == 'true');
+            url = await getTrackUrl(playing, (process.env['ALBUM_COVER'] || 'true') == 'true');
         }
     }
 
     return url;
 }
 
-export const spotify = (spotify: Spotify): Router => {
+export const spotify = (config: Config, spotify: Spotify): Router => {
     const api: Router = Router();
 
     api.get('/playing', async (_, res: Response) => {
@@ -58,10 +59,10 @@ export const spotify = (spotify: Spotify): Router => {
     });
 
     api.get('/song/:id', async (req: Request, res: Response) => {
-        const track: Track | undefined = await spotify.getSong(req.params["id"]);
+        const track: Track | undefined = await spotify.getSong(req.params['id']);
 
         if (track) {
-            res.setHeader('Location', await getTrackUrl(track, (process.env["ALBUM_COVER"] || 'true') == 'true'));
+            res.setHeader('Location', await getTrackUrl(track, config.shields.displayAlbumCover));
             res.status(302);
             res.end();
 
@@ -72,10 +73,10 @@ export const spotify = (spotify: Spotify): Router => {
     });
 
     api.get('/song-raw/:id', async (req: Request, res: Response) => {
-        const track: Track | undefined = await spotify.getSong(req.params["id"]);
+        const track: Track | undefined = await spotify.getSong(req.params['id']);
 
         if (track) {
-            const url = await getTrackUrl(track, (process.env["ALBUM_COVER"] || 'true') == 'true');
+            const url = await getTrackUrl(track, config.shields.displayAlbumCover);
 
             const img = Buffer.from((await axios.get(url, {
                 responseType: 'arraybuffer'

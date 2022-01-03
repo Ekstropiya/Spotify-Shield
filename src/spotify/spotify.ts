@@ -2,7 +2,7 @@ import axios, { Axios } from 'axios';
 import { Request, Response } from 'express';
 import qs from 'qs';
 import * as fs from 'fs';
-import { Artist, Track } from "./entities";
+import { Artist, Track } from './entities';
 
 export class Spotify {
 
@@ -176,7 +176,7 @@ export class Spotify {
             }
 
             const artist: Artist = {
-                name: data['item']['artists'][0]["name"],
+                name: data['item']['artists'][0]['name'],
                 icons: data['item']['artists'][0]['images'],
             };
 
@@ -212,7 +212,7 @@ export class Spotify {
             const data = response.data;
 
             const artist: Artist = {
-                name: data['artists'][0]["name"],
+                name: data['artists'][0]['name'],
                 icons: data['artists'][0]['images'],
             };
 
