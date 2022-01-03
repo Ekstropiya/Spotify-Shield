@@ -30,6 +30,7 @@ export interface Image {
 export interface Artist {
     name: string;
     icons: Array<Image>;
+    followers?: number;
 }
 
 export interface Album {
