@@ -174,23 +174,31 @@ export class Spotify {
             } else if (response.status == 204) {
                 return undefined;
             }
+            
+            const type = data['currently_playing_type'];
+
+            if (type == 'episode' || type == 'ad' || type == 'unknown') {
+                return undefined;
+            }
+            
+            const item = data['item'];
 
             const artist: Artist = {
-                name: data['item']['artists'][0]['name'],
-                icons: data['item']['artists'][0]['images'],
+                name: item['artists'][0]['name'],
+                icons: item['artists'][0]['images'],
             };
 
             return {
-                name: data['item']['name'],
+                name: item['name'],
                 artist: artist,
                 album: {
-                    name: data['item']['album']['name'],
-                    covers: data['item']['album']['images'],
+                    name: item['album']['name'],
+                    covers: item['album']['images'],
                     artist: artist,
-                    date: data['item']['album']['release_data'],
+                    date: item['album']['release_data'],
                 },
-                preview: data['item']['preview_url'],
-                link: data['item']['external_urls']['spotify'],
+                preview: item['preview_url'],
+                link: item['external_urls']['spotify'],
             };
         } else {
             return undefined;
