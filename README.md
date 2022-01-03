@@ -5,7 +5,11 @@
 ![Pull Requests](https://img.shields.io/github/issues-pr/Ekstropiya/Spotify-Shield?label=pull%20requests)
 ![Version](https://img.shields.io/github/v/tag/Ekstropiya/Spotify-Shield)
 
-Utilize Spotify's API to create a Spotify "currently playing" Shields.IO image for your GitHub README. 
+Utilize Spotify's API to create a Spotify "currently playing" Shields.IO image for your GitHub README. For example, my own:
+
+![](https://spotify.api.extropy.dev/spotify/playing-raw)
+
+###### This is gonna look kind of stupid when I'm not listening to Spotify, isn't it?
 
 ### Documentation
 
