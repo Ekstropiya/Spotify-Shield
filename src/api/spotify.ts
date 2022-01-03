@@ -1,7 +1,7 @@
 import { Router, Response, Request } from 'express';
 import { config as loadConfig } from 'dotenv';
 import axios from 'axios';
-import { Spotify, Track } from 'src/spotify';
+import { Show, Spotify, Track } from 'src/spotify';
 import { Config } from '../config';
 
 loadConfig();
@@ -18,6 +18,20 @@ const getTrackUrl = async (track: Track, album: boolean): Promise<string> => {
         })).data, 'binary').toString('base64');
         url += `&logo=data:image/png;base64,${imageb64}`;
     }
+
+    return url;
+}
+
+const getShowUrl = async (show: Show): Promise<string> => {
+    let name = show.name.replaceAll('-', '--');
+    let episodes = show.episodes.length;
+
+    let url = `https://img.shields.io/badge/${name}-${episodes} episodes-117032?labelColor=1DB954`
+
+    const imageb64 = Buffer.from((await axios.get(show.images.splice(-1)[0].url, {
+        responseType: 'arraybuffer'
+    })).data, 'binary').toString('base64');
+    url += `&logo=data:image/png;base64,${imageb64}`;
 
     return url;
 }
@@ -83,6 +97,38 @@ export const spotify = (config: Config, spotify: Spotify): Router => {
             })).data, 'binary');
 
             res.setHeader('Content-Type', 'image/svg+xml; charset-utf8');
+            res.end(img);
+
+            return;
+        }
+
+        res.sendStatus(404);
+    });
+
+    api.get('/show/:id', async (req: Request, res: Response) => {
+        const show: Show | undefined = await spotify.getShow(req.params['id']);
+
+        if (show) {
+            res.setHeader('Location', await getShowUrl(show));
+            res.status(302);
+            res.end();
+
+            return;
+        }
+    });
+
+    api.get('/show-raw/:id', async (req: Request, res: Response) => {
+        const show: Show | undefined = await spotify.getShow(req.params['id']);
+
+        if (show) {
+            const url = await getShowUrl(show);
+
+            const img = Buffer.from((await axios.get(url, {
+                responseType: 'arraybuffer'
+            })).data, 'binary');
+
+            res.setHeader('Content-Type', 'image/svg+xml; charset-utf8');
+            res.setHeader('Cache-Control', 'public, max-age=21600, must-revalidate');
             res.end(img);
 
             return;
