@@ -2,22 +2,14 @@ import axios, { Axios } from 'axios';
 import { Request, Response } from 'express';
 import qs from 'qs';
 import * as fs from 'fs';
-
-// TODO: Improve interfaces.
-export interface CurrentlyPlaying {
-    song: string;
-    artist: string;
-    image: string;
-    previewLink: string;
-    songLink: string;
-}
+import { Artist, Track } from './entities';
 
 export class Spotify {
 
     private auth: string;
     private authRefresh: string;
 
-    private appAuthorization: string;
+    private readonly appAuthorization: string;
 
     private axios: Axios;
 
@@ -163,7 +155,7 @@ export class Spotify {
         });
     }
 
-    public getCurrentlyPlaying = async (): Promise<CurrentlyPlaying | undefined> => {
+    public getCurrentlyPlaying = async (): Promise<Track | undefined> => {
         const response = await axios.get('https://api.spotify.com/v1/me/player', {
             headers: {
                 'Authorization': `Bearer ${this.auth}`,
@@ -182,17 +174,71 @@ export class Spotify {
             } else if (response.status == 204) {
                 return undefined;
             }
+            
+            const type = data['currently_playing_type'];
+
+            if (type == 'episode' || type == 'ad' || type == 'unknown') {
+                return undefined;
+            }
+            
+            const item = data['item'];
+
+            const artist: Artist = {
+                name: item['artists'][0]['name'],
+                icons: item['artists'][0]['images'],
+            };
 
             return {
-                song: data['item']['name'],
-                artist: data['item']['artists'][0]['name'],
-                image: data['item']['album']['images'].slice(-1)[0]['url'],
-                previewLink: data['item']['preview_url'],
-                songLink: data['item']['external_urls']['spotify'],
+                name: item['name'],
+                artist: artist,
+                album: {
+                    name: item['album']['name'],
+                    covers: item['album']['images'],
+                    artist: artist,
+                    date: item['album']['release_data'],
+                },
+                preview: item['preview_url'],
+                link: item['external_urls']['spotify'],
             };
         } else {
             return undefined;
         }
 
     }
+
+    public getSong = async (id: string): Promise<Track | undefined> => {
+        const response = await axios.get(`https://api.spotify.com/v1/tracks/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${this.auth}`,
+                'Content-Type': 'application/json'
+            }
+        }).catch((_) => {
+            return undefined;
+        });
+
+        if (response) {
+            const data = response.data;
+
+            const artist: Artist = {
+                name: data['artists'][0]['name'],
+                icons: data['artists'][0]['images'],
+            };
+
+            return {
+                name: data['name'],
+                artist: artist,
+                album: {
+                    name: data['album']['name'],
+                    covers: data['album']['images'],
+                    artist: artist,
+                    date: data['album']['release_data'],
+                },
+                preview: data['preview_url'],
+                link: data['external_urls']['spotify'],
+            };
+        }
+
+        return undefined;
+    }
+
 }
