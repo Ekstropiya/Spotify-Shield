@@ -1,7 +1,7 @@
 import { Router, Response, Request } from 'express';
 import { config as loadConfig } from 'dotenv';
 import axios from 'axios';
-import { Show, Spotify, Track } from 'src/spotify';
+import { Artist, Show, Spotify, Track } from 'src/spotify';
 import { Config } from '../config';
 
 loadConfig();
@@ -29,6 +29,20 @@ const getShowUrl = async (show: Show): Promise<string> => {
     let url = `https://img.shields.io/badge/${name}-${episodes} episodes-117032?labelColor=1DB954`
 
     const imageb64 = Buffer.from((await axios.get(show.images.splice(-1)[0].url, {
+        responseType: 'arraybuffer'
+    })).data, 'binary').toString('base64');
+    url += `&logo=data:image/png;base64,${imageb64}`;
+
+    return url;
+}
+
+const getArtistUrl = async (artist: Artist): Promise<string> => {
+    let name = artist.name.replaceAll('-', '--');
+    let followers = (artist.followers || -1).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+    let url = `https://img.shields.io/badge/${name}-${followers} followers-117032?labelColor=1DB954`;
+
+    const imageb64 = Buffer.from((await axios.get(artist.icons.splice(-1)[0].url, {
         responseType: 'arraybuffer'
     })).data, 'binary').toString('base64');
     url += `&logo=data:image/png;base64,${imageb64}`;
@@ -122,6 +136,38 @@ export const spotify = (config: Config, spotify: Spotify): Router => {
 
         if (show) {
             const url = await getShowUrl(show);
+
+            const img = Buffer.from((await axios.get(url, {
+                responseType: 'arraybuffer'
+            })).data, 'binary');
+
+            res.setHeader('Content-Type', 'image/svg+xml; charset-utf8');
+            res.setHeader('Cache-Control', 'public, max-age=21600, must-revalidate');
+            res.end(img);
+
+            return;
+        }
+
+        res.sendStatus(404);
+    });
+
+    api.get('/artist/:id', async (req: Request, res: Response) => {
+        const artist: Artist | undefined = await spotify.getArtist(req.params['id']);
+
+        if (artist) {
+            res.setHeader('Location', await getArtistUrl(artist));
+            res.status(302);
+            res.end();
+
+            return;
+        }
+    });
+
+    api.get('/artist-raw/:id', async (req: Request, res: Response) => {
+        const artist: Artist | undefined = await spotify.getArtist(req.params['id']);
+
+        if (artist) {
+            const url = await getArtistUrl(artist);
 
             const img = Buffer.from((await axios.get(url, {
                 responseType: 'arraybuffer'
