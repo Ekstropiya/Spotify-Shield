@@ -9,4 +9,4 @@ Utilize Spotify's API to create a Spotify "currently playing" Shields.IO image f
 
 ### Documentation
 
-Documentation can be found in ``docs/`` or [here](docs/README.md).
+Documentation can be found in ``docs/``, [here](docs/README.md).
