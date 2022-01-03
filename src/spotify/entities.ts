@@ -1,3 +1,18 @@
+export interface Show {
+    name: string;
+    description: string;
+    images: Array<Image>;
+    episodes: Array<Episode>
+}
+
+export interface Episode {
+    name: string;
+    url: string;
+    date: string;
+    duration: number;
+    images: Array<Image>;
+}
+
 export interface Track {
     name: string;
     artist: Artist;
