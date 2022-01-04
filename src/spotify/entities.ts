@@ -1,3 +1,9 @@
+export interface User {
+    name: string;
+    followers: number;
+    avatars: Array<Image>;
+}
+
 export interface Playlist {
     name: string;
     duration: number;
