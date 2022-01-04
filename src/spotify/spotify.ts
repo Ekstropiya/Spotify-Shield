@@ -301,7 +301,7 @@ export class Spotify {
     }
 
     public getPlaylist = async (id: string): Promise<Playlist | undefined> => {
-        const response = await axios.get(`https://api.spotify.com/v1/artists/${id}`, {
+        const response = await axios.get(`https://api.spotify.com/v1/playlists/${id}`, {
             headers: {
                 'Authorization': `Bearer ${this.auth}`,
                 'Content-Type': 'application/json'
@@ -313,10 +313,42 @@ export class Spotify {
         if (response) {
             const data = response.data;
 
+            const tracks: Track[] = [];
+
+            data['tracks']['items'].forEach((track: any) => {
+                track = track['track'];
+
+                const artist: Artist = {
+                    name: track['artists'][0]['name'],
+                    icons: track['artists'][0]['images'],
+                };
+
+                tracks.push({
+                    name: track['name'],
+                    artist: track,
+                    album: {
+                        name: track['album']['name'],
+                        covers: track['album']['images'],
+                        artist: artist,
+                        date: track['album']['release_data'],
+                    },
+                    duration: track['duration_ms'],
+                    preview: track['preview_url'],
+                    link: track['external_urls']['spotify'],
+                })
+            });
+
+            let duration = 0;
+
+            tracks.forEach((track: Track) => {
+                duration += track.duration || 0;
+            });
+
             return {
                 name: data['name'],
                 icons: data['images'],
-                followers: data['followers']['total']
+                tracks: tracks,
+                duration: duration,
             };
         }
 
