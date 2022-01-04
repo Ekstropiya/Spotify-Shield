@@ -212,5 +212,37 @@ export const spotify = (config: Config, spotify: Spotify): Router => {
         res.sendStatus(404);
     });
 
+    api.get('/playlist/:id', async (req: Request, res: Response) => {
+        const playlist: Playlist | undefined = await spotify.getPlaylist(req.params['id']);
+
+        if (playlist) {
+            res.setHeader('Location', await getPlaylistUrl(playlist));
+            res.status(302);
+            res.end();
+
+            return;
+        }
+    });
+
+    api.get('/playlist-raw/:id', async (req: Request, res: Response) => {
+        const playlist: Playlist | undefined = await spotify.getPlaylist(req.params['id']);
+
+        if (playlist) {
+            const url = await getPlaylistUrl(playlist);
+
+            const img = Buffer.from((await axios.get(url, {
+                responseType: 'arraybuffer'
+            })).data, 'binary');
+
+            res.setHeader('Content-Type', 'image/svg+xml; charset-utf8');
+            res.setHeader('Cache-Control', 'public, max-age=10800, must-revalidate');
+            res.end(img);
+
+            return;
+        }
+
+        res.sendStatus(404);
+    });
+
     return api;
 }
