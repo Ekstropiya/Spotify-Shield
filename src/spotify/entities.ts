@@ -1,3 +1,10 @@
+export interface Playlist {
+    name: string;
+    duration: number;
+    icons: Array<Image>;
+    tracks: Array<Track>;
+}
+
 export interface Show {
     name: string;
     description: string;
@@ -15,6 +22,7 @@ export interface Episode {
 
 export interface Track {
     name: string;
+    duration?: number;
     artist: Artist;
     album: Album;
     link: string;

@@ -2,7 +2,7 @@ import axios, { Axios } from 'axios';
 import { Request, Response } from 'express';
 import qs from 'qs';
 import * as fs from 'fs';
-import { Artist, Episode, Show, Track } from './entities';
+import { Artist, Episode, Playlist, Show, Track } from './entities';
 
 export class Spotify {
 
@@ -278,6 +278,29 @@ export class Spotify {
     }
 
     public getArtist = async (id: string): Promise<Artist | undefined> => {
+        const response = await axios.get(`https://api.spotify.com/v1/artists/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${this.auth}`,
+                'Content-Type': 'application/json'
+            }
+        }).catch((_) => {
+            return undefined;
+        });
+
+        if (response) {
+            const data = response.data;
+
+            return {
+                name: data['name'],
+                icons: data['images'],
+                followers: data['followers']['total']
+            };
+        }
+
+        return undefined;
+    }
+
+    public getPlaylist = async (id: string): Promise<Playlist | undefined> => {
         const response = await axios.get(`https://api.spotify.com/v1/artists/${id}`, {
             headers: {
                 'Authorization': `Bearer ${this.auth}`,
