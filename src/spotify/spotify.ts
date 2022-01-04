@@ -2,7 +2,7 @@ import axios, { Axios } from 'axios';
 import { Request, Response } from 'express';
 import qs from 'qs';
 import * as fs from 'fs';
-import { Artist, Track } from './entities';
+import { Artist, Episode, Playlist, Show, Track, User } from './entities';
 
 export class Spotify {
 
@@ -236,6 +236,143 @@ export class Spotify {
                 preview: data['preview_url'],
                 link: data['external_urls']['spotify'],
             };
+        }
+
+        return undefined;
+    }
+
+    public getShow = async (id: string): Promise<Show | undefined> => {
+        const response = await axios.get(`https://api.spotify.com/v1/shows/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${this.auth}`,
+                'Content-Type': 'application/json'
+            }
+        }).catch((_) => {
+            return undefined;
+        });
+
+        if (response) {
+            const data = response.data;
+
+            const show: Show = {
+                name: data['name'],
+                images: data['images'],
+                description: data['description'],
+                episodes: new Array<Episode>(),
+            };
+
+            data['episodes']['items']?.forEach((episode: any) => {
+                show.episodes.push({
+                    name: episode['name'],
+                    images: episode['images'],
+                    url: episode['external_urls']['spotify'],
+                    date: episode['release_date'],
+                    duration: episode['duration_ms'],
+                });
+            });
+
+            return show;
+        }
+
+        return undefined;
+    }
+
+    public getArtist = async (id: string): Promise<Artist | undefined> => {
+        const response = await axios.get(`https://api.spotify.com/v1/artists/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${this.auth}`,
+                'Content-Type': 'application/json'
+            }
+        }).catch((_) => {
+            return undefined;
+        });
+
+        if (response) {
+            const data = response.data;
+
+            return {
+                name: data['name'],
+                icons: data['images'],
+                followers: data['followers']['total']
+            };
+        }
+
+        return undefined;
+    }
+
+    public getPlaylist = async (id: string): Promise<Playlist | undefined> => {
+        const response = await axios.get(`https://api.spotify.com/v1/playlists/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${this.auth}`,
+                'Content-Type': 'application/json'
+            }
+        }).catch((_) => {
+            return undefined;
+        });
+
+        if (response) {
+            const data = response.data;
+
+            const tracks: Track[] = [];
+
+            data['tracks']['items'].forEach((track: any) => {
+                track = track['track'];
+
+                const artist: Artist = {
+                    name: track['artists'][0]['name'],
+                    icons: track['artists'][0]['images'],
+                };
+
+                tracks.push({
+                    name: track['name'],
+                    artist: track,
+                    album: {
+                        name: track['album']['name'],
+                        covers: track['album']['images'],
+                        artist: artist,
+                        date: track['album']['release_data'],
+                    },
+                    duration: track['duration_ms'],
+                    preview: track['preview_url'],
+                    link: track['external_urls']['spotify'],
+                })
+            });
+
+            let duration = 0;
+
+            tracks.forEach((track: Track) => {
+                duration += track.duration || 0;
+            });
+
+            return {
+                name: data['name'],
+                icons: data['images'],
+                tracks: tracks,
+                duration: duration,
+            };
+        }
+
+        return undefined;
+    }
+
+    public getUser = async (): Promise<User | undefined> => {
+        const response = await axios.get(`https://api.spotify.com/v1/me`, {
+            headers: {
+                'Authorization': `Bearer ${this.auth}`,
+                'Content-Type': 'application/json'
+            }
+        }).catch((_) => {
+            return undefined;
+        });
+
+        if (response) {
+            const data = response.data;
+
+            return {
+                name: data['display_name'],
+                followers: data['followers']['total'],
+                avatars: data['images'],
+            }
         }
 
         return undefined;
