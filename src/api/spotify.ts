@@ -1,7 +1,7 @@
 import { Router, Response, Request } from 'express';
 import { config as loadConfig } from 'dotenv';
 import axios from 'axios';
-import { Artist, Playlist, Show, Spotify, Track } from 'src/spotify';
+import { Artist, Playlist, Show, Spotify, Track, User } from 'src/spotify';
 import { Config } from '../config';
 
 loadConfig();
@@ -72,6 +72,28 @@ export const getPlaylistUrl = async (playlist: Playlist): Promise<string> => {
 
     let url = `https://img.shields.io/badge/${name}-${songs} songs, ${time}-117032?labelColor=1DB954`;
     const imageb64 = Buffer.from((await axios.get(playlist.icons.splice(-1)[0].url, {
+        responseType: 'arraybuffer'
+    })).data, 'binary').toString('base64');
+    url += `&logo=data:image/png;base64,${imageb64}`;
+
+    return url;
+}
+
+const getUserUrl = async (user: User): Promise<string> => {
+    const name = user.name.replaceAll('-', '--');
+    const followers = (user.followers || -1).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+    let url = `https://img.shields.io/badge/${name}-`;
+
+    if (user.followers > 1) {
+        url += `${followers} followers`;
+    } else {
+        url += `${followers} follower`;
+    }
+
+    url += '-117032?labelColor=1DB954';
+
+    const imageb64 = Buffer.from((await axios.get(user.avatars.splice(-1)[0].url, {
         responseType: 'arraybuffer'
     })).data, 'binary').toString('base64');
     url += `&logo=data:image/png;base64,${imageb64}`;
@@ -229,6 +251,38 @@ export const spotify = (config: Config, spotify: Spotify): Router => {
 
         if (playlist) {
             const url = await getPlaylistUrl(playlist);
+
+            const img = Buffer.from((await axios.get(url, {
+                responseType: 'arraybuffer'
+            })).data, 'binary');
+
+            res.setHeader('Content-Type', 'image/svg+xml; charset-utf8');
+            res.setHeader('Cache-Control', 'public, max-age=10800, must-revalidate');
+            res.end(img);
+
+            return;
+        }
+
+        res.sendStatus(404);
+    });
+
+    api.get('/user', async (_, res: Response) => {
+        const user: User | undefined = await spotify.getUser();
+
+        if (user) {
+            res.setHeader('Location', await getUserUrl(user));
+            res.status(302);
+            res.end();
+
+            return;
+        }
+    });
+
+    api.get('/user-raw', async (_, res: Response) => {
+        const user: User | undefined = await spotify.getUser();
+
+        if (user) {
+            const url = await getUserUrl(user);
 
             const img = Buffer.from((await axios.get(url, {
                 responseType: 'arraybuffer'
