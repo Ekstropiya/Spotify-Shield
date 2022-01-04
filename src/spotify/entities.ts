@@ -1,5 +1,34 @@
+export interface User {
+    name: string;
+    followers: number;
+    avatars: Array<Image>;
+}
+
+export interface Playlist {
+    name: string;
+    duration: number;
+    icons: Array<Image>;
+    tracks: Array<Track>;
+}
+
+export interface Show {
+    name: string;
+    description: string;
+    images: Array<Image>;
+    episodes: Array<Episode>
+}
+
+export interface Episode {
+    name: string;
+    url: string;
+    date: string;
+    duration: number;
+    images: Array<Image>;
+}
+
 export interface Track {
     name: string;
+    duration?: number;
     artist: Artist;
     album: Album;
     link: string;
@@ -15,6 +44,7 @@ export interface Image {
 export interface Artist {
     name: string;
     icons: Array<Image>;
+    followers?: number;
 }
 
 export interface Album {
