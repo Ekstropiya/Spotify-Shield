@@ -1,7 +1,7 @@
 import { Router, Response, Request } from 'express';
 import { config as loadConfig } from 'dotenv';
 import axios from 'axios';
-import { Artist, Show, Spotify, Track } from 'src/spotify';
+import { Artist, Playlist, Show, Spotify, Track } from 'src/spotify';
 import { Config } from '../config';
 
 loadConfig();
@@ -43,6 +43,35 @@ const getArtistUrl = async (artist: Artist): Promise<string> => {
     let url = `https://img.shields.io/badge/${name}-${followers} followers-117032?labelColor=1DB954`;
 
     const imageb64 = Buffer.from((await axios.get(artist.icons.splice(-1)[0].url, {
+        responseType: 'arraybuffer'
+    })).data, 'binary').toString('base64');
+    url += `&logo=data:image/png;base64,${imageb64}`;
+
+    return url;
+}
+
+export const getPlaylistUrl = async (playlist: Playlist): Promise<string> => {
+    let name = playlist.name.replaceAll('-', '--');
+    let songs = playlist.tracks.length;
+
+    const hours = Math.floor(playlist.duration / 1000 / 60 / 60);
+    const minutes = Math.floor((playlist.duration / 1000 / 60 / 60 - hours) * 60);
+    let time = "";
+
+    if (hours == 1) {
+        time += hours + " hr ";
+    } else if (hours > 1) {
+        time += hours + " hrs ";
+    }
+
+    if (minutes == 1) {
+        time += minutes + " min";
+    } else if (minutes > 1) {
+        time += minutes + " mins";
+    }
+
+    let url = `https://img.shields.io/badge/${name}-${songs} songs, ${time}-117032?labelColor=1DB954`;
+    const imageb64 = Buffer.from((await axios.get(playlist.icons.splice(-1)[0].url, {
         responseType: 'arraybuffer'
     })).data, 'binary').toString('base64');
     url += `&logo=data:image/png;base64,${imageb64}`;
